@@ -13,7 +13,7 @@ CV = 5
 def dtree(data, label, filename):
     # Initialize Parameters
     max_depth = range(1, 10)
-    min_samples_leaf = range(1, 10)
+    ccp_alpha = [0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9]
 
     # Start with learning curve
     sizes, training_scores, testing_scores = model_selection.learning_curve(tree.DecisionTreeClassifier(), data, label,
@@ -34,18 +34,19 @@ def dtree(data, label, filename):
 
     # Second Validation Curve
     train_score_2, test_score_2 = model_selection.validation_curve(tree.DecisionTreeClassifier(), data, label,
-                                                                   param_name='min_samples_leaf',
-                                                                   param_range=min_samples_leaf, cv=CV,
+                                                                   param_name='ccp_alpha',
+                                                                   param_range=ccp_alpha, cv=CV,
                                                                    scoring='accuracy')
 
-    valid_plotter(train_score_2, test_score_2, "Validation Curve with Decision Tree for Min Samples Leaf",
-                  'Different Min Samples Leaf Settings',
-                  'Accuracy', min_samples_leaf, f'{filename}_dtree_min_sample_leaf')
+    valid_plotter(train_score_2, test_score_2, "Validation Curve with Decision Tree for CCP Alpha",
+                  'Different Pruning Settings',
+                  'Accuracy', ccp_alpha, f'{filename}_dtree_pruning')
 
 
 def neural(data, label, filename):
     # Initialize Parameters
-    activ = ['identity', 'logistic', 'tanh', 'relu']
+    h_layer = [(583, 10), (583, 20), (583, 30), (583, 40), (583, 50)]
+    h_layer_plot = [583 * 10, 583 * 20, 583 * 30, 583 * 40, 583 * 50]
     alpha = [0.01, 0.001, 0.0001]
 
     data_train, data_test, label_train, label_test = model_selection.train_test_split(data, label, test_size=0.2)
@@ -69,15 +70,15 @@ def neural(data, label, filename):
                   "Accuracy Score", f'{filename}_nn_learning_curve')
 
     # First Validation Curve
-    train_score_2, test_score_2 = model_selection.validation_curve(
+    train_score, test_score = model_selection.validation_curve(
         neural_network.MLPClassifier(solver='adam', early_stopping=True), data, label,
-        param_name='activation',
-        param_range=activ, cv=CV,
+        param_name='hidden_layer_sizes',
+        param_range=h_layer, cv=CV,
         scoring='accuracy')
 
-    valid_plotter(train_score_2, test_score_2, "Validation Curve with Neural Network for L_Rate",
-                  'Different Activation',
-                  'Accuracy', activ, f'{filename}_activation_nn')
+    valid_plotter(train_score, test_score, "Validation Curve with Neural Network for Hidden Layer",
+                  'Number of Neural Nodes',
+                  'Accuracy', h_layer_plot, f'{filename}_nn_hidden_layer')
 
     # Second Validation Curve
     train_score_3, test_score_3 = model_selection.validation_curve(
@@ -88,7 +89,7 @@ def neural(data, label, filename):
 
     valid_plotter(train_score_3, test_score_3, "Validation Curve with Neural Network for Alpha",
                   'Different Alpha Settings',
-                  'Accuracy', alpha, f'{filename}_alpha_nn')
+                  'Accuracy', alpha, f'{filename}_nn_alpha')
 
 
 def b_dtree(data, label, filename):
@@ -264,15 +265,15 @@ if __name__ == '__main__':
     health_data, health_label = pre_process_health(pandas.read_csv('classification_dataset/health.csv'))
     apple_data, apple_label = pre_process_apple(pandas.read_csv('classification_dataset/apple_quality.csv'))
 
-    # SvM(apple_data, apple_label, 'apple')
-    # dtree(apple_data, apple_label, 'apple')
-    # knn(apple_data, apple_label, 'apple')
-    # b_dtree(apple_data, apple_label, 'apple')
-    #
-    # SvM(health_data, health_label, 'health')
-    # dtree(health_data, health_label, 'health')
-    # knn(health_data, health_label, 'health')
-    # b_dtree(health_data, health_label, 'health')
-    #
-    # neural(apple_data, apple_label, 'apple')
+    SvM(apple_data, apple_label, 'apple')
+    dtree(apple_data, apple_label, 'apple')
+    knn(apple_data, apple_label, 'apple')
+    b_dtree(apple_data, apple_label, 'apple')
+
+    SvM(health_data, health_label, 'health')
+    dtree(health_data, health_label, 'health')
+    knn(health_data, health_label, 'health')
+    b_dtree(health_data, health_label, 'health')
+
+    neural(apple_data, apple_label, 'apple')
     neural(health_data, health_label, 'health')
